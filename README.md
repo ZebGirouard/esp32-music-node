@@ -61,7 +61,7 @@ Returns current state:
 {
   "ok": true,
   "freq": 440,
-  "volume": 12000,
+  "volume": 1000,
   "ip": "192.168.x.x"
 }
 ```
@@ -82,7 +82,8 @@ Constraints:
 
 - `freq=0` mutes output
 - `20 <= freq <= 5000`
-- `0 <= volume <= 28000`
+- `0 <= volume <= 2000`
+- Invalid numeric values return `400` without changing the current tone.
 
 Example:
 
@@ -90,4 +91,4 @@ Example:
 http://ESP32_IP/set?freq=880&volume=1000
 ```
 
-For the current speaker setup, keep client-sent volume values at `2000` or lower.
+The firmware clamps volume to `2000` or lower for the current speaker setup.

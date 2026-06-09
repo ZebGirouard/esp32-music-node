@@ -27,7 +27,7 @@ static const float TWO_PI_F = 6.28318530717958647692f;
 WebServer server(80);
 
 volatile float freq = 440.0f;
-volatile float volume = 12000.0f;
+volatile float volume = 1000.0f;
 
 static float phase = 0.0f;
 
@@ -47,6 +47,18 @@ String formatNumber(float value) {
   }
 
   return String(value, 2);
+}
+
+bool parseFloatArg(String rawValue, float& parsedValue) {
+  rawValue.trim();
+  if (rawValue.length() == 0) {
+    return false;
+  }
+
+  char* end = NULL;
+  parsedValue = strtof(rawValue.c_str(), &end);
+
+  return end != rawValue.c_str() && *end == '\0' && isfinite(parsedValue);
 }
 
 String statusJson(bool includeIp) {
@@ -73,18 +85,33 @@ void handleStatus() {
 }
 
 void handleSet() {
+  float nextFreq = freq;
+  float nextVolume = volume;
+
   if (server.hasArg("freq")) {
-    float nextFreq = server.arg("freq").toFloat();
+    if (!parseFloatArg(server.arg("freq"), nextFreq)) {
+      sendJson(400, "{\"ok\":false,\"error\":\"invalid_freq\"}");
+      return;
+    }
+
     if (nextFreq == 0.0f) {
-      freq = 0.0f;
+      nextFreq = 0.0f;
     } else {
-      freq = clampFloat(nextFreq, 20.0f, 5000.0f);
+      nextFreq = clampFloat(nextFreq, 20.0f, 5000.0f);
     }
   }
 
   if (server.hasArg("volume")) {
-    volume = clampFloat(server.arg("volume").toFloat(), 0.0f, 28000.0f);
+    if (!parseFloatArg(server.arg("volume"), nextVolume)) {
+      sendJson(400, "{\"ok\":false,\"error\":\"invalid_volume\"}");
+      return;
+    }
+
+    nextVolume = clampFloat(nextVolume, 0.0f, 2000.0f);
   }
+
+  freq = nextFreq;
+  volume = nextVolume;
 
   sendJson(200, statusJson(false));
 }
