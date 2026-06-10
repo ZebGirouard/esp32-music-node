@@ -14,41 +14,38 @@ Known working I2S wiring:
 
 ## Setup
 
-1. Provide Wi-Fi credentials with shell environment variables or a local ignored `config.h`.
-2. Upload `esp32-music-node.ino` with the Arduino ESP32 board support installed.
-3. Open Serial Monitor at `115200` baud to see the assigned IP address.
+1. Copy `.env.example` to `.env`.
+2. Set your Wi-Fi credentials in `.env`.
+3. Upload `esp32-music-node.ino` with the Arduino ESP32 board support installed.
+4. Open Serial Monitor at `115200` baud to see the assigned IP address.
 
-`config.h` is ignored by Git so local Wi-Fi credentials are not committed. For a shell-based setup, add these to a private shell config such as `~/.zshrc`:
+`.env` and `config.h` are ignored by Git so local Wi-Fi credentials are not committed.
+
+`.env`:
 
 ```sh
-export ESP32_MUSIC_WIFI_SSID='YOUR_WIFI'
-export ESP32_MUSIC_WIFI_PASSWORD='YOUR_PASSWORD'
+ESP32_MUSIC_WIFI_SSID=YOUR_WIFI
+ESP32_MUSIC_WIFI_PASSWORD=YOUR_PASSWORD
 ```
 
 ## Build and Upload
 
-Arduino CLI compile:
+Compile:
 
 ```sh
-arduino-cli compile --fqbn esp32:esp32:adafruit_feather_esp32_v2 \
-  --build-property "build.extra_flags=-DWIFI_SSID=\"${ESP32_MUSIC_WIFI_SSID}\" -DWIFI_PASSWORD=\"${ESP32_MUSIC_WIFI_PASSWORD}\"" \
-  .
+make compile
 ```
 
-Arduino CLI upload, replacing the port if needed:
+Upload, replacing the port if needed:
 
 ```sh
-arduino-cli upload -p /dev/cu.usbserial-5B1E0644481 \
-  --fqbn esp32:esp32:adafruit_feather_esp32_v2 \
-  --upload-property upload.speed=115200 \
-  --build-property "build.extra_flags=-DWIFI_SSID=\"${ESP32_MUSIC_WIFI_SSID}\" -DWIFI_PASSWORD=\"${ESP32_MUSIC_WIFI_PASSWORD}\"" \
-  .
+make upload PORT=/dev/cu.usbserial-5B1E0644481
 ```
 
 Serial monitor:
 
 ```sh
-arduino-cli monitor -p /dev/cu.usbserial-5B1E0644481 -c baudrate=115200
+make monitor PORT=/dev/cu.usbserial-5B1E0644481
 ```
 
 ## API
@@ -60,8 +57,8 @@ Returns current state:
 ```json
 {
   "ok": true,
-  "freq": 440,
-  "volume": 1000,
+  "freq": 0,
+  "volume": 0,
   "ip": "192.168.x.x"
 }
 ```
@@ -92,3 +89,4 @@ http://ESP32_IP/set?freq=880&volume=1000
 ```
 
 The firmware clamps volume to `2000` or lower for the current speaker setup.
+On boot, the node starts silent with `freq=0` and `volume=0` until a `/set` request starts playback.

@@ -26,8 +26,8 @@ static const float TWO_PI_F = 6.28318530717958647692f;
 
 WebServer server(80);
 
-volatile float freq = 440.0f;
-volatile float volume = 1000.0f;
+volatile float freq = 0.0f;
+volatile float volume = 0.0f;
 
 static float phase = 0.0f;
 
